@@ -16,6 +16,22 @@ def client():
         yield client
 
 
+def test_index(client):
+    """Verify the root / endpoint returns running message."""
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "Flask REST API + MongoDB is running" in response.get_data(as_text=True)
+
+
+def test_ping_db(client):
+    """Verify the /api/ping-db endpoint connects to MongoDB Atlas and returns 200."""
+    response = client.get("/api/ping-db")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["ok"] is True
+    assert "MongoDB Atlas is reachable and connected!" in data["message"]
+
+
 def test_health_check(client):
     """Verify the /api/health endpoint returns 200 and healthy status."""
     response = client.get("/api/health")
@@ -51,4 +67,3 @@ def test_chat_stub(client):
     data = response.get_json()
     assert data["status"] == "success"
     assert "reply" in data
-

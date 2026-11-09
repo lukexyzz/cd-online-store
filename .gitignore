@@ -2,7 +2,9 @@
 backend/.venv/
 .venv/
 backend/.env
+backend/.neon
 .env
+.neon
 
 # Node dependencies & build artifacts
 frontend/node_modules/
@@ -15,4 +17,3 @@ backend/.pytest_cache/
 __pycache__/
 *.py[cod]
 *$py.class
-
