@@ -14,6 +14,7 @@ class Config:
     FLASK_ENV = os.getenv("FLASK_ENV", "development")
     PORT = int(os.getenv("FLASK_PORT", 5000))
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
+    JWT_SECRET = os.getenv("JWT_SECRET", SECRET_KEY)
 
     # SQL Database URI (Neon Postgres DATABASE_URL from backend/.env, with SQLite fallback)
     DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///cd_store.db")

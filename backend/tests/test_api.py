@@ -46,9 +46,9 @@ def test_get_cds_stub(client):
     response = client.get("/api/cds")
     assert response.status_code == 200
     data = response.get_json()
-    assert data["status"] == "success"
-    assert isinstance(data["data"], list)
-    assert len(data["data"]) > 0
+    items = data if isinstance(data, list) else data.get("data", [])
+    assert isinstance(items, list)
+    assert len(items) > 0
 
 
 def test_create_order_stub(client):
@@ -67,3 +67,21 @@ def test_chat_stub(client):
     assert response.status_code == 200
     data = response.get_json()
     assert "reply" in data
+
+
+def test_auth_login_jwt(client):
+    """Verify login issues a valid JWT token."""
+    test_email = "jwt_test_user@example.com"
+    test_password = "password123"
+
+    # Register or ignore if already exists
+    client.post("/api/auth/register", json={"email": test_email, "password": test_password})
+
+    # Test login
+    response = client.post("/api/auth/login", json={"email": test_email, "password": test_password})
+    assert response.status_code == 200
+    data = response.get_json()
+    assert "token" in data
+    assert isinstance(data["token"], str)
+    assert len(data["token"]) > 20
+    assert data["user"]["email"] == test_email

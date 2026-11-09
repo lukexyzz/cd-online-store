@@ -7,6 +7,7 @@ cd_bp = Blueprint("cd_routes", __name__)
 
 # GET /api/cds -> Returns basic catalog from SQL
 @cd_bp.route("/cds", methods=["GET"])
+@cd_bp.route("/api/cds", methods=["GET"])
 def get_all_cds():
   session = get_sql_session()
   cds = session.query(CD).all()
@@ -17,6 +18,7 @@ def get_all_cds():
 
 # GET /api/cds/<int:cd_id> -> Returns combined SQL catalog data & NoSQL extra details
 @cd_bp.route("/cds/<int:cd_id>", methods=["GET"])
+@cd_bp.route("/api/cds/<int:cd_id>", methods=["GET"])
 def get_cd_by_id(cd_id):
   session = get_sql_session()
   cd = session.query(CD).filter(CD.cd_id == cd_id).first()
