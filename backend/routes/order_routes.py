@@ -12,9 +12,8 @@ def create_order():
 
     if not items:
         log_system_event(
-            event_type="ORDER_VALIDATION_ERROR",
-            message="Order attempted with empty items list",
-            level="WARNING",
+            "ORDER_VALIDATION_ERROR",
+            {"message": "Order attempted with empty items list"},
         )
         return jsonify({"status": "error", "message": "Order must contain at least one item."}), 400
 
@@ -22,10 +21,8 @@ def create_order():
     order_id = "ORD-1001"
 
     log_system_event(
-        event_type="ORDER_CREATED",
-        message=f"Order {order_id} created",
-        level="INFO",
-        details={"order_id": order_id, "item_count": len(items), "total": total},
+        "ORDER_CREATED",
+        {"order_id": order_id, "item_count": len(items), "total": total},
     )
 
     return (

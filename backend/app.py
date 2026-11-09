@@ -9,6 +9,7 @@ from flask_cors import CORS
 
 from config import Config
 from database.nosql_db import ping_nosql
+from database.sql_db import ping_sql
 from routes.cd_routes import cd_bp
 from routes.chat_routes import chat_bp
 from routes.order_routes import order_bp
@@ -29,10 +30,17 @@ def create_app() -> Flask:
 
     @app.route("/api/ping-db", methods=["GET"])
     def ping_db():
-        ok, message = ping_nosql()
-        if ok:
-            return jsonify({"ok": True, "message": message}), 200
-        return jsonify({"ok": False, "error": message}), 500
+        sql_ok, sql_message = ping_sql()
+        nosql_ok, nosql_message = ping_nosql()
+        both_ok = sql_ok and nosql_ok
+
+        response_payload = {
+            "ok": both_ok,
+            "message": f"{sql_message} | {nosql_message}",
+            "sql": {"ok": sql_ok, "message": sql_message},
+            "nosql": {"ok": nosql_ok, "message": nosql_message},
+        }
+        return jsonify(response_payload), (200 if both_ok else 500)
 
     @app.route("/api/health", methods=["GET"])
     def health_check():
@@ -41,7 +49,7 @@ def create_app() -> Flask:
 
     @app.route("/")
     def index():
-        return "Flask REST API + MongoDB is running. Try GET /api/ping-db"
+        return "Flask REST API + Neon SQL + MongoDB is running. Try GET /api/ping-db"
 
     return app
 

@@ -1,13 +1,15 @@
 from datetime import datetime, timezone
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
-load_dotenv()
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(dotenv_path=BACKEND_DIR / ".env")
 
 
 def get_mongo_client():
-  mongo_uri = os.getenv("MONGODB_ATLAS_URI")
+  mongo_uri = os.getenv("MONGODB_ATLAS_URI") or os.getenv("MONGODB_URI")
   if not mongo_uri:
     raise ValueError("MONGODB_ATLAS_URI is missing from backend/.env")
   return MongoClient(mongo_uri)

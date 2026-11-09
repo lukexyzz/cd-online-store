@@ -1,11 +1,13 @@
 import os
 from datetime import datetime, timezone
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, create_engine
+from pathlib import Path
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, create_engine, text
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 from dotenv import load_dotenv
 
-# Load connection string from backend/.env
-load_dotenv()
+# Load connection string from backend/.env regardless of working directory
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(dotenv_path=BACKEND_DIR / ".env")
 
 Base = declarative_base()
 
@@ -117,12 +119,31 @@ class OrderItem(Base):
     }
 
 def get_sql_engine(db_url=None):
-  url = db_url or os.getenv("NEON_SQL_URL")
+  url = db_url or os.getenv("NEON_SQL_URL") or os.getenv("DATABASE_URL")
   if not url:
     raise ValueError(
-        "NEON_SQL_URL is missing from environment variables (.env)."
+        "NEON_SQL_URL / DATABASE_URL is missing from environment variables (backend/.env)."
     )
+  # Ensure SQLAlchemy 2.1+ uses psycopg2-binary driver for postgresql:// URLs
+  if url.startswith("postgres://"):
+    url = url.replace("postgres://", "postgresql+psycopg2://", 1)
+  elif url.startswith("postgresql://"):
+    url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
   return create_engine(url)
+
+
+def ping_sql():
+  """
+  Pings the Neon PostgreSQL database to verify connection status.
+  Returns (True, message) if successful, or (False, error) on failure.
+  """
+  try:
+    engine = get_sql_engine()
+    with engine.connect() as conn:
+      conn.execute(text("SELECT 1"))
+    return True, "Neon PostgreSQL is reachable and connected!"
+  except Exception as e:
+    return False, str(e)
 
 
 def get_sql_session(db_url=None):
@@ -137,3 +158,10 @@ def init_db(db_url=None):
   engine = get_sql_engine(db_url)
   Base.metadata.create_all(engine)
   print("SQL Database tables verified/created successfully!")
+
+
+if __name__ == "__main__":
+  ok, msg = ping_sql()
+  print(f"SQL Ping status: {ok} - {msg}")
+  if ok:
+    init_db()
